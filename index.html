@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Shopping Cart Mart</title>
+<style>
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:#f1f3f6;
+}
+
+/* NAVBAR */
+.navbar{
+background:#131921;
+color:white;
+padding:15px;
+text-align:center;
+font-size:22px;
+font-weight:bold;
+}
+
+/* HERO */
+.hero{
+background:url('https://images.unsplash.com/photo-1607083206968-13611e3d76db') no-repeat center; 
+background-size:cover;
+height:350px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+color:white;
+text-shadow:2px 2px 5px black;
+}
+
+/* BUTTON */
+.btn{
+background:#ff9900;
+border:none;
+padding:10px 20px;
+color:white;
+border-radius:5px;
+cursor:pointer;
+margin:5px;
+}
+
+/* LOGIN CARD */
+.card{
+background:white;
+width:320px;
+margin:80px auto;
+padding:30px;
+border-radius:10px;
+box-shadow:0 0 15px rgba(0,0,0,0.2);
+text-align:center;
+}
+
+input{
+width:90%;
+padding:10px;
+margin:10px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+/* PRODUCT */
+.product{
+display:inline-block;
+background:white;
+width:200px;
+margin:15px;
+padding:10px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+text-align:center;
+}
+
+.product img{
+width:150px;
+height:150px;
+object-fit:cover;
+border-radius:8px;
+}
+
+section{display:none;padding:20px;}
+.active{display:block;}
+</style>
+</head>
+<body>
+<div class="navbar">🛒 Shopping Cart Mart</div>
+
+<!-- FRONT -->
+<section id="start" class="active">
+<div class="hero">
+<h1>Welcome to Online Shopping</h1>
+<button class="btn" onclick="show('login')">Start Shopping</button>
+</div>
+</section>
+
+<!-- LOGIN -->
+<section id="login">
+<div class="card">
+<h2>Login</h2>
+<input type="text" placeholder="Username">
+<input type="password" placeholder="Password">
+<button class="btn" onclick="show('home')">Login</button>
+</div>
+</section>
+
+<!-- HOME -->
+<section id="home">
+<center>
+<h2>Select Category</h2>
+<button class="btn" onclick="loadProducts('grocery')">Grocery</button>
+<button class="btn" onclick="loadProducts('electronics')">Electronics</button>
+<button class="btn" onclick="loadProducts('dress')">Dress</button>
+<button class="btn" onclick="loadProducts('cosmetics')">Cosmetics</button>
+<button class="btn" onclick="loadProducts('stationary')">Stationary</button>
+<button class="btn" onclick="show('cart')">Cart</button>
+</center>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+<center>
+<h2 id="title"></h2>
+<div id="productList"></div>
+<button class="btn" onclick="show('home')">Back</button>
+</center>
+</section>
+
+<!-- CART -->
+<section id="cart">
+<center>
+<h2>Your Cart</h2>
+<div id="cartItems"></div>
+<h3>Total: ₹<span id="total">0</span></h3>
+<button class="btn" onclick="generateQR()">Proceed Payment</button>
+<br><br>
+<div id="qrcode"></div>
+<button class="btn" onclick="show('home')">Back</button>
+
+<div id="qrcode"></div>
+</center>
+</section>
+
+<script>
+let cart=[];
+
+let products={
+grocery:[
+{name:"Rice",price:50,img:"image/rice.jpg"},
+{name:"Sugar",price:40,img:"image/sugar.jpg"},
+{name:"Cooking Oil",price:120,img:"image/oil.jpg"},
+{name:"Milk",price:30,img:"image/milk.jpg"},
+{name:"Salt",price:20,img:"image/salt.jpg"}
+],
+electronics:[
+{name:"Mobile",price:10000,img:"image/mobile.jpg"},
+{name:"Laptop",price:45000,img:"image/laptop.jpg"},
+{name:"Headset",price:500,img:"image/headset.jpg"},
+{name:"Watch",price:2000,img:"image/watch.jpg"},
+{name:"Speaker",price:1500,img:"image/speaker.jpg"}
+],
+dress:[
+{name:"Shirt",price:700,img:"image/shirt.jpg"},
+{name:"Saree",price:1500,img:"image/saree.jpg"},
+{name:"Jeans",price:900,img:"image/jeans.jpg"},
+{name:"Kurti",price:800,img:"image/kurti.jpg"},
+{name:"Tshirt",price:400,img:"image/tshirt.jpg"}
+],
+cosmetics:[
+{name:"Lipstick",price:300,img:"image/lipstick.jpg"},
+{name:"Perfume",price:600,img:"image/perfume.jpg"},
+{name:"Facewash",price:200,img:"image/facewash.jpg"},
+{name:"FacePowder",price:250,img:"image/facepowder.jpg"},
+{name:"FaceCream",price:350,img:"image/facecream.jpg"}
+],
+stationary:[
+{name:"Pen",price:10,img:"image/pen.jpg"},
+{name:"Notebook",price:50,img:"image/notebook.jpg"},
+{name:"School Bag",price:600,img:"image/school bag.jpg"},
+{name:"Pencil",price:5,img:"image/pencil.jpg"},
+{name:"Scale",price:15,img:"image/scale.jpg"}
+]
+};
+
+function show(id){
+document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+if(id==="cart") loadCart();
+}
+
+function loadProducts(cat){
+show("products");
+document.getElementById("title").innerText=cat.toUpperCase();
+let list=document.getElementById("productList");
+list.innerHTML="";
+products[cat].forEach(p=>{
+list.innerHTML+=`
+<div class="product">
+<img src="${p.img}">
+<h4>${p.name}</h4>
+<p>₹${p.price}</p>
+<p>⭐⭐⭐⭐☆</p>
+<button class="btn" onclick="addToCart('${p.name}',${p.price})">Add to Cart</button>
+</div>`;
+});
+}
+
+function addToCart(name,price){
+let existing = cart.find(p => p.name === name);
+
+if(existing){
+existing.qty++;
+}else{
+cart.push({name,price,qty:1});
+}
+
+alert("Added to Cart");
+
+}
+function generateQR(){
+
+let bill = "Shopping Cart Bill\n\n";
+let total = 0;
+
+cart.forEach(function(c){
+
+bill += c.name + " x " + c.qty + " = ₹" + (c.price*c.qty) + "\n";
+
+total += c.price * c.qty;
+
+});
+
+bill += "\nTotal: ₹" + total;
+
+document.getElementById("qrcode").innerHTML = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+
+new QRCode(document.getElementById("qrcode"),{
+text: bill,
+width:200,
+height:200
+});
+
+}
+function loadCart(){
+let items=document.getElementById("cartItems");
+items.innerHTML="";
+
+let total=0;
+
+cart.forEach((c,index)=>{
+
+items.innerHTML+=`
+<p>
+${c.name} - ₹${c.price} 
+<button onclick="decrease(${index})">-</button>
+${c.qty}
+<button onclick="increase(${index})">+</button>
+</p>`;
+
+total+=c.price * c.qty;
+
+});
+
+document.getElementById("total").innerText=total;
+
+}
+
+
+function increase(i){
+cart[i].qty++;
+loadCart();
+}
+
+function decrease(i){
+
+cart[i].qty--;
+
+if(cart[i].qty<=0){
+cart.splice(i,1);
+}
+
+loadCart();
+
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+</script>
+</body>
+</html>
